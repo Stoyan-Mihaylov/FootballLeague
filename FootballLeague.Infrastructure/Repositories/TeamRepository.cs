@@ -1,6 +1,6 @@
 ﻿using FootballLeague.Application.Contracts.Repositories;
-using FootballLeague.Application.DTOs;
 using FootballLeague.Application.Exceptions;
+using FootballLeague.Application.Models.Teams;
 using FootballLeague.Domain.Entities;
 using FootballLeague.Infrastructure.Extensions;
 using Microsoft.EntityFrameworkCore;
@@ -45,13 +45,13 @@ namespace FootballLeague.Infrastructure.Repositories
 
         public void Delete(Team entity) => _context.Teams.Remove(entity);
 
-        public async Task<List<TeamRankingDto>> GetTeamsRankingAsync()
+        public async Task<List<TeamsRankingResponse>> GetTeamsRankingAsync()
         {
             return await _context.Teams
                 .AsNoTracking()
                 .Include(t => t.HomeMatches)
                 .Include(t => t.AwayMatches)
-                .Select(team => new TeamRankingDto
+                .Select(team => new TeamsRankingResponse
                 {
                     TeamId = team.Id,
                     TeamName = team.Name,

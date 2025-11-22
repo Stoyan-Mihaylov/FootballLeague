@@ -1,4 +1,4 @@
-﻿using FootballLeague.Application.DTOs;
+﻿using FootballLeague.Application.Models.Teams;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,13 +6,13 @@ namespace FootballLeague.Application.Contracts.Services
 {
     public interface ITeamService
     {
-        Task<List<GetAllTeamsDto>> GetAllTeamsAsync();
+        Task<List<GetAllTeamsResponse>> GetAllTeamsAsync();
 
-        Task<List<TeamRankingDto>> GetTeamsRankingAsync();
+        Task<List<TeamsRankingResponse>> GetTeamsRankingAsync();
 
-        Task<TeamDto> CreateTeamAsync(TeamDto teamDto);
+        Task<TeamResponse> CreateTeamAsync(TeamRequest request);
 
-        Task UpdateTeamAsync(int teamId, TeamDto teamDto);
+        Task UpdateTeamAsync(int teamId, TeamRequest request);
 
         Task DeleteTeamAsync(int teamId);
     }

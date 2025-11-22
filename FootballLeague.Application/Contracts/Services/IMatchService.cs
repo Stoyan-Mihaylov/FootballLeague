@@ -1,4 +1,4 @@
-﻿using FootballLeague.Application.DTOs;
+﻿using FootballLeague.Application.Models.Matches;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,9 +6,9 @@ namespace FootballLeague.Application.Contracts.Services
 {
     public interface IMatchService
     {
-        Task<List<GetAllMatchesDto>> GetAllMatchesAsync();
-        Task<CreateMatchDto> CreateMatchAsync(MatchDto matchDto);
-        Task UpdateMatchAsync(int matchId, MatchDto matchDto);
+        Task<List<MatchResponse>> GetAllMatchesAsync();
+        Task<MatchResponse> CreateMatchAsync(MatchRequest request);
+        Task UpdateMatchAsync(int matchId, MatchRequest request);
         Task DeleteMatchAsync(int matchId);
     }
 }

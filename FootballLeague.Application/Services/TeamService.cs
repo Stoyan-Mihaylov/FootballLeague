@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using FootballLeague.Application.Contracts.Repositories;
 using FootballLeague.Application.Contracts.Services;
-using FootballLeague.Application.DTOs;
+using FootballLeague.Application.Models.Teams;
 using FootballLeague.Domain.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,28 +21,28 @@ namespace FootballLeague.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<GetAllTeamsDto>> GetAllTeamsAsync()
+        public async Task<List<GetAllTeamsResponse>> GetAllTeamsAsync()
         {
             var teams = await _unitOfWork.Teams.GetAllAsync();
-            return _mapper.Map<List<GetAllTeamsDto>>(teams);
+            return _mapper.Map<List<GetAllTeamsResponse>>(teams);
         }
 
-        public async Task<List<TeamRankingDto>> GetTeamsRankingAsync()
+        public async Task<List<TeamsRankingResponse>> GetTeamsRankingAsync()
             => await _unitOfWork.Teams.GetTeamsRankingAsync();
 
-        public async Task<TeamDto> CreateTeamAsync(TeamDto teamDto)
+        public async Task<TeamResponse> CreateTeamAsync(TeamRequest request)
         {
-            var team = _mapper.Map<Team>(teamDto);
+            var team = _mapper.Map<Team>(request);
             await _unitOfWork.Teams.AddAsync(team);
             await _unitOfWork.SaveChangesAsync();
-            return teamDto;
+            return _mapper.Map<TeamResponse>(team);
         }
 
-        public async Task UpdateTeamAsync(int teamId, TeamDto teamDto)
+        public async Task UpdateTeamAsync(int teamId, TeamRequest request)
         {
             var team = await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == teamId);
 
-            _mapper.Map(teamDto, team);
+            _mapper.Map(request, team);
             await _unitOfWork.SaveChangesAsync();
         }
 

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using FootballLeague.Application.Contracts.Repositories;
 using FootballLeague.Application.Contracts.Services;
-using FootballLeague.Application.DTOs;
+using FootballLeague.Application.Models.Matches;
 using FootballLeague.Domain.Entities;
 using FootballLeague.Domain.Enums;
 using System.Collections.Generic;
@@ -25,41 +25,41 @@ namespace FootballLeague.Application.Services
             _mapper = mapper;
         }
 
-        public async Task<List<GetAllMatchesDto>> GetAllMatchesAsync()
+        public async Task<List<MatchResponse>> GetAllMatchesAsync()
         {
             var matches = await _unitOfWork.Matches.GetAllAsync();
-            return _mapper.Map<List<GetAllMatchesDto>>(matches);
+            return _mapper.Map<List<MatchResponse>>(matches);
         }
 
-        public async Task<CreateMatchDto> CreateMatchAsync(MatchDto matchDto)
+        public async Task<MatchResponse> CreateMatchAsync(MatchRequest request)
         {
-            var homeTeam = await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == matchDto.HomeTeamId);
-            var awayTeam = await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == matchDto.AwayTeamId);
+            var homeTeam = await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == request.HomeTeamId);
+            var awayTeam = await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == request.AwayTeamId);
 
-            var match = _mapper.Map<Match>(matchDto);
+            var match = _mapper.Map<Match>(request);
 
             _pointsService.UpdateTeamsPointsBasedOnMatch(match, homeTeam, awayTeam, PointsAction.Apply);
 
             await _unitOfWork.Matches.AddAsync(match);
             await _unitOfWork.SaveChangesAsync();
-            return _mapper.Map<CreateMatchDto>(match);
+            return _mapper.Map<MatchResponse>(match);
         }
 
-        public async Task UpdateMatchAsync(int matchId, MatchDto matchDto)
+        public async Task UpdateMatchAsync(int matchId, MatchRequest request)
         {
             var match = await _unitOfWork.Matches.GetByConditionAsync(m => m.Id == matchId);
 
             _pointsService.UpdateTeamsPointsBasedOnMatch(match, match.HomeTeam, match.AwayTeam, PointsAction.Revert);
 
-            var newHomeTeam = match.HomeTeamId != matchDto.HomeTeamId
-                ? await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == matchDto.HomeTeamId)
+            var newHomeTeam = match.HomeTeamId != request.HomeTeamId
+                ? await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == request.HomeTeamId)
                 : match.HomeTeam;
 
-            var newAwayTeam = match.AwayTeamId != matchDto.AwayTeamId
-                ? await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == matchDto.AwayTeamId)
+            var newAwayTeam = match.AwayTeamId != request.AwayTeamId
+                ? await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == request.AwayTeamId)
                 : match.AwayTeam;
 
-            _mapper.Map(matchDto, match);
+            _mapper.Map(request, match);
             _pointsService.UpdateTeamsPointsBasedOnMatch(match, newHomeTeam, newAwayTeam, PointsAction.Apply);
             await _unitOfWork.SaveChangesAsync();
         }
