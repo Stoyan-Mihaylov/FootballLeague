@@ -47,5 +47,8 @@ namespace FootballLeague.Infrastructure.Repositories
         {
             _context.Matches.Remove(entity);
         }
+
+        public async Task<bool> ExistsAsync(Expression<Func<Match, bool>> predicate)
+            => await _context.Matches.AnyAsync(predicate);
     }
 }

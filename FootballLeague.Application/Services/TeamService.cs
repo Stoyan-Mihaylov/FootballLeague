@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FootballLeague.Application.Contracts.Repositories;
 using FootballLeague.Application.Contracts.Services;
+using FootballLeague.Application.Exceptions;
 using FootballLeague.Application.Models.Teams;
 using FootballLeague.Domain.Entities;
 using System.Collections.Generic;
@@ -48,6 +49,12 @@ namespace FootballLeague.Application.Services
 
         public async Task DeleteTeamAsync(int teamId)
         {
+            bool isUsedInMatches = await _unitOfWork.Matches.ExistsAsync(
+                m => m.HomeTeamId == teamId || m.AwayTeamId == teamId);
+
+            if (isUsedInMatches)
+                throw new BadRequestException("Cannot delete team because it is used in existing match.");
+
             var team = await _unitOfWork.Teams.GetByConditionAsync(t => t.Id == teamId);
 
             _unitOfWork.Teams.Delete(team);
