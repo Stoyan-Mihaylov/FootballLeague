@@ -1,5 +1,5 @@
 ﻿using FootballLeague.Application.Contracts.Services;
-using FootballLeague.Application.DTOs;
+using FootballLeague.Application.Models.Matches;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,20 +18,20 @@ namespace FootballLeague.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<GetAllMatchesDto>>> GetAllMatches()
+        public async Task<ActionResult<List<MatchResponse>>> GetAllMatches()
             => Ok(await _matchService.GetAllMatchesAsync());
 
         [HttpPost]
-        public async Task<ActionResult> CreateMatch([FromBody] MatchDto matchDto)
+        public async Task<ActionResult<MatchResponse>> CreateMatch([FromBody] MatchRequest request)
         {
-            var match = await _matchService.CreateMatchAsync(matchDto);
+            var match = await _matchService.CreateMatchAsync(request);
             return CreatedAtAction(nameof(CreateMatch), match);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateMatch(int id, [FromBody] MatchDto matchDto)
+        public async Task<ActionResult> UpdateMatch(int id, [FromBody] MatchRequest request)
         {
-            await _matchService.UpdateMatchAsync(id, matchDto);
+            await _matchService.UpdateMatchAsync(id, request);
             return NoContent();
         }
 
