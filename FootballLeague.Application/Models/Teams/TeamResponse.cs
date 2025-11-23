@@ -5,6 +5,7 @@ namespace FootballLeague.Application.Models.Teams
 {
     public class TeamResponse : IMapFrom<Team>
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public int Points { get; set; }
     }
