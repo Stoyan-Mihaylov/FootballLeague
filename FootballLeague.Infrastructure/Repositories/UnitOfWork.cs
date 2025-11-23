@@ -1,4 +1,5 @@
 ﻿using FootballLeague.Application.Contracts.Repositories;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FootballLeague.Infrastructure.Repositories
@@ -17,6 +18,6 @@ namespace FootballLeague.Infrastructure.Repositories
         public ITeamRepository Teams { get; }
         public IMatchRepository Matches { get; }
 
-        public async Task SaveChangesAsync() => await _context.SaveChangesAsync();
+        public async Task SaveChangesAsync(CancellationToken cancellationToken) => await _context.SaveChangesAsync(cancellationToken);
     }
 }

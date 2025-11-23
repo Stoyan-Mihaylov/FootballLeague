@@ -2,6 +2,7 @@
 using FootballLeague.Application.Models.Matches;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FootballLeague.API.Controllers
@@ -18,27 +19,27 @@ namespace FootballLeague.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MatchResponse>>> GetAllMatches()
-            => Ok(await _matchService.GetAllMatchesAsync());
+        public async Task<ActionResult<List<MatchResponse>>> GetAllMatches(CancellationToken cancellationToken)
+            => Ok(await _matchService.GetAllMatchesAsync(cancellationToken));
 
         [HttpPost]
-        public async Task<ActionResult<MatchResponse>> CreateMatch([FromBody] MatchRequest request)
+        public async Task<ActionResult<MatchResponse>> CreateMatch([FromBody] MatchRequest request, CancellationToken cancellationToken)
         {
-            var match = await _matchService.CreateMatchAsync(request);
+            var match = await _matchService.CreateMatchAsync(request, cancellationToken);
             return CreatedAtAction(nameof(CreateMatch), match);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateMatch(int id, [FromBody] MatchRequest request)
+        public async Task<ActionResult> UpdateMatch(int id, [FromBody] MatchRequest request, CancellationToken cancellationToken)
         {
-            await _matchService.UpdateMatchAsync(id, request);
+            await _matchService.UpdateMatchAsync(id, request, cancellationToken);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteMatch(int id)
+        public async Task<ActionResult> DeleteMatch(int id, CancellationToken cancellationToken)
         {
-            await _matchService.DeleteMatchAsync(id);
+            await _matchService.DeleteMatchAsync(id, cancellationToken);
             return NoContent();
         }
     }

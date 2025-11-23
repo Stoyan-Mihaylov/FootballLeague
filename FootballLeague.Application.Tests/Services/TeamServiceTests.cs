@@ -9,6 +9,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Match = FootballLeague.Domain.Entities.Match;
 
@@ -39,7 +40,7 @@ namespace FootballLeague.Application.Tests.Services
                 new Team { Id = 2, Name = "Team2", Points = 2 }
             };
 
-            _unitOfWorkMock.Setup(u => u.Teams.GetAllAsync())
+            _unitOfWorkMock.Setup(u => u.Teams.GetAllAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(teams);
 
             var mappedTeams = new List<GetAllTeamsResponse>
@@ -52,12 +53,12 @@ namespace FootballLeague.Application.Tests.Services
                 .Returns(mappedTeams);
 
             // Act
-            var result = await _teamService.GetAllTeamsAsync();
+            var result = await _teamService.GetAllTeamsAsync(It.IsAny<CancellationToken>());
 
             // Assert
             Assert.AreEqual(mappedTeams, result);
 
-            _unitOfWorkMock.Verify(u => u.Teams.GetAllAsync(), Times.Once);
+            _unitOfWorkMock.Verify(u => u.Teams.GetAllAsync(It.IsAny<CancellationToken>()), Times.Once);
             _mapperMock.Verify(m => m.Map<List<GetAllTeamsResponse>>(teams), Times.Once);
         }
 
@@ -73,15 +74,15 @@ namespace FootballLeague.Application.Tests.Services
             };
 
             _unitOfWorkMock
-                .Setup(u => u.Teams.GetTeamsRankingAsync())
+                .Setup(u => u.Teams.GetTeamsRankingAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(expectedRanking);
 
             // Act
-            var result = await _teamService.GetTeamsRankingAsync();
+            var result = await _teamService.GetTeamsRankingAsync(It.IsAny<CancellationToken>());
 
             // Assert
             Assert.AreEqual(expectedRanking, result);
-            _unitOfWorkMock.Verify(u => u.Teams.GetTeamsRankingAsync(), Times.Once);
+            _unitOfWorkMock.Verify(u => u.Teams.GetTeamsRankingAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -98,21 +99,21 @@ namespace FootballLeague.Application.Tests.Services
             _mapperMock.Setup(m => m.Map<Team>(request))
                 .Returns(team);
 
-            teamRepoMock.Setup(r => r.AddAsync(It.IsAny<Team>()))
+            teamRepoMock.Setup(r => r.AddAsync(It.IsAny<Team>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
-            _unitOfWorkMock.Setup(u => u.SaveChangesAsync())
+            _unitOfWorkMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             _mapperMock.Setup(m => m.Map<TeamResponse>(team))
                 .Returns(new TeamResponse { Id = 5, Name = "A" });
 
             // Act
-            var result = await _teamService.CreateTeamAsync(request);
+            var result = await _teamService.CreateTeamAsync(request, It.IsAny<CancellationToken>());
 
             // Assert
-            teamRepoMock.Verify(r => r.AddAsync(team), Times.Once);
-            _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+            teamRepoMock.Verify(r => r.AddAsync(team, It.IsAny<CancellationToken>()), Times.Once);
+            _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
             Assert.AreEqual(team.Id, result.Id);
             Assert.AreEqual(team.Name, result.Name);
             Assert.AreEqual(team.Points, result.Points);
@@ -126,15 +127,15 @@ namespace FootballLeague.Application.Tests.Services
             var existingTeam = new Team { Id = teamId, Name = "OldName", Points = 7 };
             var request = new TeamRequest { Name = "NewName", Points = 3 };
 
-            _unitOfWorkMock.Setup(u => u.Teams.GetByConditionAsync(It.IsAny<Expression<Func<Team, bool>>>(), It.IsAny<bool>()))
+            _unitOfWorkMock.Setup(u => u.Teams.GetByConditionAsync(It.IsAny<Expression<Func<Team, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<bool>()))
                 .ReturnsAsync(existingTeam);
 
             // Act
-            await _teamService.UpdateTeamAsync(teamId, request);
+            await _teamService.UpdateTeamAsync(teamId, request, It.IsAny<CancellationToken>());
 
             // Assert
             _mapperMock.Verify(m => m.Map(request, existingTeam), Times.Once);
-            _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+            _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Test]
@@ -143,12 +144,12 @@ namespace FootballLeague.Application.Tests.Services
             // Arrange
             var teamId = 3;
 
-            _unitOfWorkMock.Setup(u => u.Matches.ExistsAsync(It.IsAny<Expression<Func<Match, bool>>>()))
+            _unitOfWorkMock.Setup(u => u.Matches.ExistsAsync(It.IsAny<Expression<Func<Match, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Act & Assert
             Assert.ThrowsAsync<BadRequestException>(async () =>
-                await _teamService.DeleteTeamAsync(teamId));
+                await _teamService.DeleteTeamAsync(teamId, It.IsAny<CancellationToken>()));
         }
 
         [Test]
@@ -158,18 +159,18 @@ namespace FootballLeague.Application.Tests.Services
             var teamId = 3;
             var team = new Team { Id = teamId };
 
-            _unitOfWorkMock.Setup(u => u.Matches.ExistsAsync(It.IsAny<Expression<Func<Match, bool>>>()))
+            _unitOfWorkMock.Setup(u => u.Matches.ExistsAsync(It.IsAny<Expression<Func<Match, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
-            _unitOfWorkMock.Setup(u => u.Teams.GetByConditionAsync(It.IsAny<Expression<Func<Team, bool>>>(), It.IsAny<bool>()))
+            _unitOfWorkMock.Setup(u => u.Teams.GetByConditionAsync(It.IsAny<Expression<Func<Team, bool>>>(), It.IsAny<CancellationToken>(), It.IsAny<bool>()))
                 .ReturnsAsync(team);
 
             // Act
-            await _teamService.DeleteTeamAsync(teamId);
+            await _teamService.DeleteTeamAsync(teamId, It.IsAny<CancellationToken>());
 
             // Assert
             _unitOfWorkMock.Verify(u => u.Teams.Delete(team), Times.Once);
-            _unitOfWorkMock.Verify(u => u.SaveChangesAsync(), Times.Once);
+            _unitOfWorkMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

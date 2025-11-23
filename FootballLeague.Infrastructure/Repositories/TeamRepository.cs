@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FootballLeague.Infrastructure.Repositories
@@ -18,34 +19,33 @@ namespace FootballLeague.Infrastructure.Repositories
 
         public TeamRepository(FootballLeagueDbContext context) => _context = context;
 
-        public async Task<List<Team>> GetAllAsync() => await _context
+        public async Task<List<Team>> GetAllAsync(CancellationToken cancellationToken) => await _context
             .Teams
             .AsNoTracking()
             .Include(t => t.HomeMatches)
             .Include(t => t.AwayMatches)
             .OrderByDescending(t => t.Points)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         public async Task<Team> GetByConditionAsync(
             Expression<Func<Team, bool>> predicate,
+            CancellationToken cancellationToken,
             bool isTracked = true)
         {
             var team = await _context.Teams
                 .WithTracking(isTracked)
                 .Where(predicate)
-                .FirstOrDefaultAsync()
+                .FirstOrDefaultAsync(cancellationToken)
                 ?? throw new NotFoundException("Team not found!");
 
             return team;
         }
 
-        public async Task AddAsync(Team entity) => await _context.Teams.AddAsync(entity);
-
-        public void Update(Team entity) => _context.Teams.Update(entity);
+        public async Task AddAsync(Team entity, CancellationToken cancellationToken) => await _context.Teams.AddAsync(entity, cancellationToken);
 
         public void Delete(Team entity) => _context.Teams.Remove(entity);
 
-        public async Task<List<TeamsRankingResponse>> GetTeamsRankingAsync()
+        public async Task<List<TeamsRankingResponse>> GetTeamsRankingAsync(CancellationToken cancellationToken)
         {
             return await _context.Teams
                 .AsNoTracking()
@@ -84,7 +84,7 @@ namespace FootballLeague.Infrastructure.Repositories
                 })
                 .OrderByDescending(r => r.Points)
                 .ThenByDescending(r => r.Won)
-                .ToListAsync();
+                .ToListAsync(cancellationToken);
         }
     }
 }
