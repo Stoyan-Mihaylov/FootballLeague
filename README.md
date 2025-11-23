@@ -28,6 +28,7 @@ FootballLeague is a C#/.NET application for managing football teams, matches, an
 - cd FootballLeague
 
 ### 2. Apply Database Migrations:
+- Before running migrations, open `appsettings.json` in the FootballLeague.Api project and ensure the connection string points to your SQL Server instance.
 - Run the following commands in the terminal from the FootballLeague.Infrastructure project directory:
 - dotnet ef database update
 - This will create the database schema and required tables.
